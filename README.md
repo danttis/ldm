@@ -9,16 +9,14 @@ usando fretes reais declarados à Receita Federal (Comex Stat/SECEX), tarifas de
 ```
 dados/                 bases baixadas (7,4 GB — NÃO entram no repo; guia de fontes abaixo)
   └─ LEIA-ME.md        ⭐ guia completo: o que é cada base, como foi baixada, como usar
-treino/                pipeline de treino (entra inteiro no repo)
+treino/                notebooks Kaggle + corpus (o pipeline instalável está no pacote navi/)
   ├─ README-treino.md  ⭐ documentação do pipeline: dataset, treino, estimação
-  ├─ montar_dataset.py      dados → corpus textual + tokenizer BPE (460 mil linhas)
-  ├─ treinar_llm.py         GPT decoder-only do zero, PyTorch puro (8,9 M params)
-  ├─ gerar.py               carrega checkpoint e estima frete a partir de um prompt
   ├─ kaggle_finetune.py     fine-tune QLoRA do Qwen2.5-1.5B (notebook Kaggle c/ GPU)
   ├─ kaggle_inpriora.py     adaptação in-context do Inpriora (sem gradiente) + LightGBM
   ├─ kaggle_tabicl_ft.py    fine-tune com GRADIENTE do TabICL v2 (INRIA) + LightGBM
   ├─ fretes-corpus.zip      corpus pronto (train.txt + val.txt, 40 MB — p/ dataset Kaggle)
   └─ corpus/tokenizer.json BPE 16k treinado no corpus
+navi/                  pacote Python (pip install git+...): montar_dataset, treinar_llm, gerar
 ```
 
 ## Corpus
@@ -31,30 +29,43 @@ FRETE maritimo importacao | ano=2020 | mes=02 | produto=Iobitridol NCM=29242964 
 
 460 mil linhas: 400 mil fretes reais Comex 2016–21 + 40 mil exportação UNCTAD + 26 mil notícias.
 
+## Instalação (pacote Python)
+
+```bash
+pip install git+https://github.com/danttis/ldm.git
+
+# para TREINAR é preciso o torch (extra separado — o wheel padrão do PyPI é CUDA, vários GB):
+pip install "navi[treino]" --extra-index-url https://download.pytorch.org/whl/cpu
+# ou, se já tiver torch no ambiente: pip install git+https://github.com/danttis/ldm.git
+```
+
+Instala os comandos `navi-montar`, `navi-treinar` e `navi-gerar` (módulos: `navi.montar_dataset`,
+`navi.treinar_llm`, `navi.gerar`).
+
 ## Uso rápido
 
 ```bash
-# 1. montar o corpus (requer as bases em dados/ — ver dados/LEIA-ME.md)
-python treino/montar_dataset.py --n-frete 400000 --n-unctad 60000 --n-noticias 40000
+# 1. montar o corpus (requer as bases em ./dados — ver dados/LEIA-ME.md; rode da raiz do projeto)
+navi-montar --n-frete 400000 --n-unctad 60000 --n-noticias 40000
 # (ou apenas descompacte treino/fretes-corpus.zip em treino/corpus/)
 
-# 2. treinar (CPU ok; GPU acelera)
-python treino/treinar_llm.py --emb 256 --camadas 6 --bloco 256 --lote 32 --passos 20000
+# 2. treinar (CPU ok; GPU acelera; --corpus/--ckpts mudam os diretórios)
+navi-treinar --emb 256 --camadas 6 --bloco 256 --lote 32 --passos 20000
 
 # 3. estimar um frete
-python treino/gerar.py "FRETE maritimo importacao | ano=2025 | mes=03 | produto=OLEO BRUTO DE PETROLEO NCM=27090010 | origem=Arabia Saudita | uf=RS | peso_kg=500_000 | fob_usd=250_000 | brent=85 =>"
+navi-gerar "FRETE maritimo importacao | ano=2025 | mes=03 | produto=OLEO BRUTO DE PETROLEO NCM=27090010 | origem=Arabia Saudita | uf=RS | peso_kg=500_000 | fob_usd=250_000 | brent=85 =>"
 ```
 
 Para os modelos tabulares (Inpriora in-context, TabICL v2 fine-tuned, LightGBM):
 notebooks Kaggle prontos em `treino/kaggle_*.py` — instruções em
 `treino/README-treino.md`.
 
-## Pré-requisitos
+## Pré-requisitos (sem instalar o pacote)
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu \
-    tokenizers pandas pyarrow numpy
+    tokenizers pandas pyarrow numpy openpyxl
 # GPU NVIDIA: pip install torch (versão CUDA)
 ```
 

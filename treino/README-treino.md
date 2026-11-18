@@ -52,7 +52,7 @@ python3 -m venv /tmp/venv_nav
 ## 1. Montar o dataset
 ```bash
 cd ~/Área de trabalho/navi
-/tmp/venv_nav/bin/python treino/montar_dataset.py \
+navi-montar \
     --n-frete 400000 --n-unctad 60000 --n-noticias 40000
 ```
 Gera:
@@ -66,14 +66,14 @@ O alvo (frete) fica no **fim** da linha de propósito: o modelo aprende a comple
 ## 2. Treinar
 ```bash
 # smoke test (~2 min, valida o pipeline):
-/tmp/venv_nav/bin/python treino/treinar_llm.py --amostras 30000 --passos 300
+navi-treinar --amostras 30000 --passos 300
 
 # treino de verdade (CPU 8 núcleos: algumas horas; ajuste --lote conforme a RAM):
-/tmp/venv_nav/bin/python treino/treinar_llm.py \
+navi-treinar \
     --emb 256 --camadas 6 --bloco 256 --lote 32 --passos 20000
 
 # retomar do último checkpoint:
-/tmp/venv_nav/bin/python treino/treinar_llm.py --passos 40000 --resume
+navi-treinar --passos 40000 --resume
 ```
 Checkpoints em `treino/checkpoints/modelo_NNNN.pt` (a cada 500 passos e no fim). Perda de treino deve cair de ~9 para <2 nos primeiros milhares de passos; a de validação acompanha enquanto o modelo ainda está subajustado (modelo pequeno + corpus grande = pouco risco de overfitting).
 
@@ -81,7 +81,7 @@ Config padrão: 6 camadas, emb 256, 8 cabeças ≈ **7,8 M parâmetros** — tre
 
 ## 3. Estimar frete
 ```bash
-/tmp/venv_nav/bin/python treino/gerar.py \
+navi-gerar \
 "FRETE maritimo importacao | ano=2025 | mes=03 | produto=OLEO BRUTO DE PETROLEO NCM=27090010 | origem=Arabia Saudita | uf=RS | peso_kg=500_000 | fob_usd=250_000 | brent=85 =>"
 ```
 O modelo completa: `frete_usd=... frete_usd_por_kg=...` — esse número é a estimativa.

@@ -1,0 +1,4 @@
+[console_scripts]
+navi-gerar = navi.gerar:main
+navi-montar = navi.montar_dataset:main
+navi-treinar = navi.treinar_llm:main

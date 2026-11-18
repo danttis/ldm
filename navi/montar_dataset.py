@@ -28,10 +28,11 @@ import sys
 import numpy as np
 import pandas as pd
 
-RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DADOS = os.path.join(RAIZ, "dados")
+# Caminhos padrão relativos ao CWD — rode da raiz do projeto, ou passe
+# --dados/--out. main() sobrescreve com os valores dos argumentos.
+DADOS = "dados"
 COMEX = os.path.join(DADOS, "comex")
-OUT = os.path.join(RAIZ, "treino", "corpus")
+OUT = os.path.join("treino", "corpus")
 
 # ---------------------------------------------------------------- decodificadores
 
@@ -181,13 +182,19 @@ def amostras_noticias(n_max, seed):
 # ---------------------------------------------------------------- main
 
 def main():
+    global DADOS, COMEX, OUT
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-frete", type=int, default=400_000)
     ap.add_argument("--n-unctad", type=int, default=60_000)
     ap.add_argument("--n-noticias", type=int, default=40_000)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--dados", default=DADOS, help="dir das bases (default: ./dados)")
+    ap.add_argument("--out", default=OUT, help="dir de saída (default: ./treino/corpus)")
     args = ap.parse_args()
 
+    DADOS = args.dados
+    COMEX = os.path.join(DADOS, "comex")
+    OUT = args.out
     os.makedirs(OUT, exist_ok=True)
     print("[1/4] decodificadores...")
     ncm_dic, pais_dic = carregar_decodificadores()

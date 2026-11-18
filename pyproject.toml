@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "navi"
+version = "0.1.0"
+description = "LLM para estimar fretes marítimos (origem Brasil)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "openpyxl",
+    "tokenizers",
+]
+
+[project.optional-dependencies]
+# torch vem como extra: no PyPI o wheel padrão é o CUDA (vários GB).
+# Em máquina sem GPU: pip install navi[treino] --index-url .../whl/cpu
+# ou instale antes: pip install torch --index-url https://download.pytorch.org/whl/cpu
+treino = ["torch"]
+
+[project.scripts]
+navi-montar = "navi.montar_dataset:main"
+navi-treinar = "navi.treinar_llm:main"
+navi-gerar = "navi.gerar:main"
+
+[tool.setuptools]
+packages = ["navi"]

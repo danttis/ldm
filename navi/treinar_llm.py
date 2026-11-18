@@ -9,9 +9,9 @@ Arquitetura: Transformer decoder-only (causal) implementado em PyTorch puro.
   - saída: logits sobre o vocabulário (16k, BPE treinado em montar_dataset.py)
 
 Como usar (após montar_dataset.py):
-  python treinar_llm.py --steps 2000          # treino padrão (CPU: horas; GPU: minutos)
-  python treinar_llm.py --resume              # continua do último checkpoint
-  python gerar.py "FRETE maritimo importacao | ano=2025 | mes=03 | produto=fertilizantes NCM=310210 | origem=Russia | uf=RS | peso_kg=500_000 | fob_usd=150_000 | brent=85 =>"
+  navi-treinar --passos 2000         # treino padrão (CPU: horas; GPU: minutos)
+  navi-treinar --resume              # continua do último checkpoint
+  navi-gerar "FRETE maritimo importacao | ano=2025 | mes=03 | produto=fertilizantes NCM=310210 | origem=Russia | uf=RS | peso_kg=500_000 | fob_usd=150_000 | brent=85 =>"
 """
 import argparse
 import glob
@@ -28,9 +28,8 @@ from torch.utils.data import DataLoader, Dataset
 
 from tokenizers import Tokenizer
 
-RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CORPUS = os.path.join(RAIZ, "treino", "corpus")
-CKPT_DIR = os.path.join(RAIZ, "treino", "checkpoints")
+CORPUS = os.path.join("treino", "corpus")      # padrões relativos ao CWD;
+CKPT_DIR = os.path.join("treino", "checkpoints")  # sobrescritos por --corpus/--ckpts
 
 # ------------------------------------------------------------------ modelo
 
@@ -152,20 +151,22 @@ def main():
     ap.add_argument("--val-cada", type=int, default=200)
     ap.add_argument("--amostras", type=int, default=None,
                     help="limita nº de linhas do corpus (treino rápido de teste)")
+    ap.add_argument("--corpus", default=CORPUS, help="dir c/ train.txt/val.txt/tokenizer.json")
+    ap.add_argument("--ckpts", default=CKPT_DIR, help="dir de checkpoints")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
 
-    os.makedirs(CKPT_DIR, exist_ok=True)
+    os.makedirs(args.ckpts, exist_ok=True)
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"dispositivo: {dev}")
 
-    tok = Tokenizer.from_file(os.path.join(CORPUS, "tokenizer.json"))
+    tok = Tokenizer.from_file(os.path.join(args.corpus, "tokenizer.json"))
     vocab = tok.get_vocab_size()
     cfg = {"emb": args.emb, "cab": args.cab, "camadas": args.camadas,
            "bloco": args.bloco, "drop": args.drop}
 
-    tr = CorpusFretes(os.path.join(CORPUS, "train.txt"), tok, args.bloco, args.amostras)
-    va = CorpusFretes(os.path.join(CORPUS, "val.txt"), tok, args.bloco,
+    tr = CorpusFretes(os.path.join(args.corpus, "train.txt"), tok, args.bloco, args.amostras)
+    va = CorpusFretes(os.path.join(args.corpus, "val.txt"), tok, args.bloco,
                       args.amostras or 20_000)
     lote_tr = DataLoader(tr, batch_size=args.lote, shuffle=True,
                          num_workers=2, drop_last=True)
@@ -179,7 +180,7 @@ def main():
                             betas=(0.9, 0.95), weight_decay=0.1)
     passo_inicial = 0
     # ordena numericamente (lexicográfico pegaria modelo_80 depois de modelo_20000)
-    ultimo = sorted(glob.glob(os.path.join(CKPT_DIR, "modelo_*.pt")),
+    ultimo = sorted(glob.glob(os.path.join(args.ckpts, "modelo_*.pt")),
                     key=lambda p: int(p.rsplit("_", 1)[1].split(".")[0]))
     if args.resume and ultimo:
         st = torch.load(ultimo[-1], map_location=dev)
@@ -222,7 +223,7 @@ def main():
                 print(f"  >> validação: {np.mean(vp):.4f}", flush=True)
                 modelo.train()
             if passo % 500 == 0 or passo >= args.passos:
-                arq = os.path.join(CKPT_DIR, f"modelo_{passo}.pt")
+                arq = os.path.join(args.ckpts, f"modelo_{passo}.pt")
                 torch.save({"modelo": modelo.state_dict(), "opt": opt.state_dict(),
                             "cfg": cfg, "passo": passo, "vocab": vocab}, arq)
                 print(f"  salvo {arq}", flush=True)

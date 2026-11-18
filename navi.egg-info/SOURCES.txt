@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+navi/__init__.py
+navi/gerar.py
+navi/montar_dataset.py
+navi/treinar_llm.py
+navi.egg-info/PKG-INFO
+navi.egg-info/SOURCES.txt
+navi.egg-info/dependency_links.txt
+navi.egg-info/entry_points.txt
+navi.egg-info/requires.txt
+navi.egg-info/top_level.txt
