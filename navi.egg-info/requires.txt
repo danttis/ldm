@@ -1,8 +1,0 @@
-numpy
-pandas
-pyarrow
-openpyxl
-tokenizers
-
-[treino]
-torch
