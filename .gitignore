@@ -1,0 +1,13 @@
+# dados brutos (7,4 GB) — só o guia de fontes entra no repo
+dados/*
+!dados/LEIA-ME.md
+
+# artefatos grandes / regeneráveis
+treino/checkpoints/
+treino/corpus/train.txt
+treino/corpus/val.txt
+treino/*.log
+__pycache__/
+*.pyc
+.venv/
+venv/
