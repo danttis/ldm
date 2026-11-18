@@ -2,6 +2,21 @@
 
 Pipeline: `dados/` → `montar_dataset.py` → corpus textual + tokenizer BPE → `treinar_llm.py` (GPT do zero em PyTorch) → `gerar.py`.
 
+## 🚀 Treinar o GPT do zero NA GPU DO KAGGLE — `kaggle_treinar_gpt.py`
+
+O treino local é limitado pela RAM (7 GB → config pequena, ~7 h em CPU). No Kaggle com GPU T4/P100 o mesmo GPT treina **~3× maior e ~6× mais rápido (~40–80 min)**. O notebook instala o próprio pacote do repo (`pip install git+https://github.com/danttis/ldm.git`) e roda `navi-treinar` na GPU:
+
+1. Suba `treino/fretes-corpus.zip` como dataset Kaggle "fretes-corpus" (o mesmo dos outros notebooks)
+2. Notebook novo → Add Input → fretes-corpus → **ative a GPU** (T4 ×2 ou P100)
+3. Cole as células de `kaggle_treinar_gpt.py` → Run All
+   - config GPU: emb 384, 8 camadas, bloco 512, lote 48 ≈ **21 M parâmetros**
+   - o tokenizer baixa do repo (não está no zip)
+4. Ao fim: baixe `checkpoints/modelo_20000.pt` pela aba Output e use local:
+   `navi-gerar --ckpts <pasta> --tokenizer treino/corpus/tokenizer.json "FRETE ... =>"`
+5. Célula opcional no fim: continuar o treino com `--resume` para 40 mil passos
+
+Validação: células testadas localmente (`navi-treinar --corpus ... --ckpts ...` → checkpoint → `navi-gerar`).
+
 ## 🎯 Fine-tuning do INPRIORA (modelo de fundação tabular) — `kaggle_inpriora.py`
 
 O [Inpriora](https://github.com/ai-for-data/inpriora) (Ant Group, Apache 2.0) é o modelo que aparece na frente do [TabArena](https://huggingface.co/spaces/TabArena/leaderboard) — **é tabular, não LLM**: não existe fine-tune por gradiente. A adaptação ao domínio é *in-context*: `fit(X, y)` fornece seus fretes reais como contexto e o modelo prevê novas consultas. O script:
