@@ -32,11 +32,15 @@ FRETE maritimo importacao | ano=2020 | mes=02 | produto=Iobitridol NCM=29242964 
 ## Instalação (pacote Python)
 
 ```bash
-pip install git+https://github.com/danttis/ldm.git
+# completo (com torch) — o extra [treino] vai no NOME do pacote, não na URL:
+pip install "navi[treino] @ git+https://github.com/danttis/ldm.git"
 
-# para TREINAR é preciso o torch (extra separado — o wheel padrão do PyPI é CUDA, vários GB):
-pip install "navi[treino]" --extra-index-url https://download.pytorch.org/whl/cpu
-# ou, se já tiver torch no ambiente: pip install git+https://github.com/danttis/ldm.git
+# máquina sem GPU — instale o torch CPU ANTES (o wheel padrão do PyPI é CUDA, vários GB):
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install "navi[treino] @ git+https://github.com/danttis/ldm.git"
+
+# só o pacote, sem torch (montar corpus não precisa):
+pip install git+https://github.com/danttis/ldm.git
 ```
 
 Instala os comandos `navi-montar`, `navi-treinar` e `navi-gerar` (módulos: `navi.montar_dataset`,
