@@ -31,7 +31,7 @@ import numpy as np
 import torch
 
 MODELO    = "Qwen/Qwen2.5-1.5B"          # base aberta (troque à vontade)
-CAMINHO   = glob.glob("/kaggle/input/*/train.txt")          # dataset anexado
+CAMINHO   = glob.glob("/kaggle/input/**/train.txt", recursive=True)  # dataset anexado
 assert CAMINHO, "Anexe o dataset fretes-corpus (train.txt/val.txt)!"
 CORPUS   = os.path.dirname(CAMINHO[0])
 SEq      = 1024                            # tokens por bloco

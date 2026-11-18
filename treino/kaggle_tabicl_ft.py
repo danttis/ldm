@@ -28,8 +28,9 @@ import numpy as np
 import pandas as pd
 import torch
 
-CAMINHOS = glob.glob("/kaggle/input/*/train.txt")
-assert CAMINHOS, "Anexe o dataset fretes-corpus (train.txt/val.txt)!"
+CAMINHOS = glob.glob("/kaggle/input/**/train.txt", recursive=True)  # qualquer profundidade
+assert CAMINHOS, ("train.txt não achado em /kaggle/input/ — confira se o dataset "
+                  "está anexado como Input do notebook")
 CORPUS = os.path.dirname(CAMINHOS[0])
 
 N_FT     = 30_000     # linhas para o FINE-TUNING

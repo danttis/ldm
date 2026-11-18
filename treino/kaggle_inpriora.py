@@ -25,7 +25,7 @@ import glob, os, re, random
 import numpy as np
 import pandas as pd
 
-CAMINHOS = glob.glob("/kaggle/input/*/train.txt")
+CAMINHOS = glob.glob("/kaggle/input/**/train.txt", recursive=True)  # qualquer profundidade
 assert CAMINHOS, "Anexe o dataset fretes-corpus (train.txt/val.txt)!"
 CORPUS = os.path.dirname(CAMINHOS[0])
 
