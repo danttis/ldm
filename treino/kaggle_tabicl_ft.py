@@ -98,7 +98,7 @@ real_usd = np.expm1(y_te)
 print("fit:", X_fit.shape, "| val:", X_val.shape, "| contexto ICL:", X_icl.shape,
       "| teste:", X_te.shape)
 print("frete/kg real — mediana %.3f | p90 %.3f" %
-      (real_usd.median(), real_usd.quantile(0.9)))
+      (np.median(real_usd), np.quantile(real_usd, 0.9)))
 
 # %% [4] A. TabICL v2 zero-shot (ICL, pesos congelados) --------------------------
 from tabicl import TabICLRegressor
