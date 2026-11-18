@@ -132,7 +132,9 @@ print(f"LIGHTGBM (mesmo contexto de {N_CONTEXTO:,}) | "
       f"MAE {np.abs(pl - real_usd).mean():.4f} US$/kg")
 
 # LightGBM com TODAS as linhas (ICL não escala igual — modelo cresce junto)
-i_resto = idx[:300_000]
+# 300 mil SEM as linhas de teste (idx[:300_000] continha o teste idx[N_CONTEXTO:N_CONTEXTO+N_TESTE]
+# e vazava no treino — corrige o baseline "LightGBM 300 mil")
+i_resto = idx[:N_CONTEXTO] + idx[N_CONTEXTO + N_TESTE : 300_000 + N_TESTE]
 Xr_icl, Xr_lgbm, yr = matrizes(df.iloc[i_resto])
 lgbm_full = LGBMRegressor(n_estimators=800, learning_rate=0.05, num_leaves=127,
                           random_state=SEED)

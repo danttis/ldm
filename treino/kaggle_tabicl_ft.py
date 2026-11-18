@@ -141,7 +141,9 @@ lgbm.fit(X_de(df.iloc[i_fit]), y_fit)
 pc = np.clip(np.expm1(lgbm.predict(X_te)), 0, None)
 print(f"LIGHTGBM (mesmas 30 mil)         | MAE {np.abs(pc - real_usd).mean():.4f} US$/kg")
 
-i_resto = idx[:300_000]
+# 300 mil SEM as linhas de teste (idx[:300_000] continha o teste idx[N_FT:N_FT+N_TESTE]
+# e vazava no treino — os primeiros resultados do "LightGBM 300k" foram contaminados)
+i_resto = idx[:N_FT] + idx[N_FT + N_TESTE : 300_000 + N_TESTE]
 lgbm_full = LGBMRegressor(n_estimators=800, learning_rate=0.05, num_leaves=127,
                           random_state=SEED)
 lgbm_full.fit(X_de(df.iloc[i_resto]), df.iloc[i_resto]["alvo"].to_numpy())
